@@ -1,0 +1,46 @@
+#include <fstream>
+#include <algorithm>
+#include <cmath>
+const std :: string programName = "bigfour";
+std :: ifstream f(programName + ".in");
+std :: ofstream g(programName + ".out");
+bool TryFirst(void);
+bool TrySecond(void);
+int D, v[4];
+int main(void) {
+        int T;
+        f >> T;
+        while (T--) {
+                bool flag = false;
+                f >> D;
+                for (int i = 0; i < 4; ++i)
+                        f >> v[i];
+                std :: sort (v, v + 4);
+                do {
+                        if (TryFirst() or TrySecond()) {
+                                flag = true;
+                                break;
+                        }
+                } while (std :: next_permutation(v, v + 4));
+                flag == true ? g << "DA\n" : g <<"NU\n";
+        }
+        return 0x0;
+}
+ 
+bool TryFirst() {
+        if (abs(v[0] - v[1]) > D or abs( v[2] - v[3]) > D)
+                return false;
+        int S1 = v[0] + v[1];
+        int S2 = v[2] + v[3];
+        return abs(S1 - S2) <= D;
+}
+ 
+bool TrySecond() {
+        int s = v[0];
+        for (int i = 1; i <  4; ++i) {
+                if (abs(s - v[i]) > D)
+                        return false;
+                s += v[i];
+        }
+        return true;
+}
