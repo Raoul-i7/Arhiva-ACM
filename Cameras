@@ -1,0 +1,118 @@
+#include <fstream>
+#include <vector>
+#include <queue>
+#include <bitset>
+#include <iomanip>
+const std :: string programName = "cameras";
+std :: ifstream f(programName + ".in");
+std :: ofstream g(programName + ".out");
+const int NMAX = 1E5;
+const double  INF = 1E18;
+std :: vector < std :: pair <int, int> > Graph[NMAX + 5];
+int N, M, K, VMAX, LIMIT;
+std :: bitset <NMAX + 5> isCamera;
+double Dist[NMAX + 5][3];
+void read(void);
+void PushAndSetQueue(int, int, double);
+void solve(void);
+void print(void);
+struct HeapNode {
+    int node, state;
+    double dist;
+    HeapNode(int node, int state, double dist) : node(node), state(state), dist(dist) {}
+    bool operator<(const HeapNode& other) const {
+        return dist > other.dist;
+    }
+};
+std :: priority_queue <HeapNode> queue;
+  
+int main(void) {
+    read();
+    solve();
+    print();    
+    return 0x0;
+}
+void read(void) {
+    f >> N >> M >> K;
+    while (K--) {
+        int node;
+        f >> node;
+        isCamera.set(node);
+    }
+    f >> VMAX >> LIMIT;
+    if (VMAX < LIMIT)
+        LIMIT = VMAX;
+    while (M--) {
+        int x, y, cost;
+        f >> x >> y >> cost;
+        Graph[x].emplace_back(y, cost);
+    }
+}
+  
+void PushAndSetQueue(int node, int state, double dist) {
+    Dist[node][state] = dist; 
+    queue.emplace(node, state, dist);
+}
+  
+void solve(void) {
+    for (int i = 1; i <= N; ++i)
+        for (int j = 0; j < 3; ++j)
+            Dist[i][j] = INF;
+    if (isCamera[1]) {
+        PushAndSetQueue(1, 1, 0);   
+    } else {
+        PushAndSetQueue(1, 0, 0);
+    }
+    while (!queue.empty()) {
+        int node = queue.top().node;
+        int state = queue.top().state;
+        double dist = queue.top().dist;
+        queue.pop();
+  
+        if (dist != Dist[node][state])
+            continue;
+  
+        for (const auto& it : Graph[node]) {
+            bool isCam = isCamera[it.first];
+  
+            if (state == 2 and isCam)
+                continue;
+  
+            double timeV = dist + 1.0 * it.second / VMAX;
+            double timeL = dist + 1.0 * it.second / LIMIT;
+            if (state == 0) {
+                if (isCam) {
+                    if (timeV < Dist[it.first][1]) {
+                        PushAndSetQueue(it.first, 1, timeV);        
+                    }
+                } else {
+                    if (timeV < Dist[it.first][0]) {
+                        PushAndSetQueue(it.first, 0, timeV);
+                    }
+                }
+            } else if (state == 1) {
+                if (isCam) {
+                    if (timeL < Dist[it.first][1]) {
+                        PushAndSetQueue(it.first, 1, timeL);
+                    }
+                } else {
+                    if (timeL < Dist[it.first][1]) {
+                        PushAndSetQueue(it.first, 1, timeL);
+                    }
+                    if (timeV < Dist[it.first][2]) {
+                        PushAndSetQueue(it.first, 2, timeV);    
+                    }
+                }
+            } else {
+                if (timeV < Dist[it.first][2]) {
+                    PushAndSetQueue(it.first, 2, timeV);
+                }
+            }
+        }
+    }   
+}
+  
+void print(void) {
+    double answer = std :: min (std :: min(Dist[N][0], Dist[N][1]), Dist[N][2]);    
+    g << std :: setprecision(10) << std :: fixed << answer << "\n"; 
+}
