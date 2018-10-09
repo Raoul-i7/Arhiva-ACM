@@ -1,0 +1,99 @@
+#include <fstream>
+#include <stack>
+#include <string>
+const std :: string programName = "entropy"; 
+std :: ifstream fin(programName + ".in");
+std :: ofstream fout(programName + ".out");
+char convey[4][4];
+std :: stack<char> stk[4];
+std :: string buffer;
+ 
+void Init(void);
+void Move(int, int);
+void ReadStack(int);
+void Read(void);
+void MoveStuff(void);
+void Print(void);
+void ClearStack(int);
+void Solve(void);
+ 
+int main(void) {
+    Init();
+    int T;
+    fin >> T;
+    while (T--)
+        Solve();
+    return 0x0;
+}
+void Init(void) {
+    convey[1][2] = 'm';
+    convey[1][3] = 'n';
+    convey[2][1] = 'o';
+    convey[2][3] = 'p';
+    convey[3][1] = 'q';
+    convey[3][2] = 'r';
+}
+void Move(int source, int destination) {
+    stk[destination].push(stk[source].top());
+    stk[source].pop();
+    buffer += convey[source][destination];
+}
+  
+void ReadStack(int i) {
+    fin >> buffer;
+    for (auto c : buffer)
+        stk[i].push(c);
+    buffer = "";
+}
+  
+void Read(void) {
+    for (int i = 1; i < 4; ++i)
+        ReadStack(i);
+}
+  
+void MoveStuff(void) {
+    while (!stk[1].empty()) {
+        Move(1, 3);
+    }
+    // 100
+    while (!stk[2].empty()) {
+        Move(2, 3);
+    }
+    // 100
+    while (!stk[3].empty()) {
+        if (stk[3].top() == 'a')
+            Move(3, 1);
+        else
+            Move(3, 2);
+    }
+    // 300
+    while (!stk[2].empty()) {
+        if (stk[2].top() == 'c')
+            Move(2, 3);
+        else
+            Move(2, 1);
+    }
+    // 300
+    while (!stk[1].empty() && stk[1].top() == 'b') {
+        Move(1, 2);
+    }
+    // 300
+}
+  
+void Print(void) {
+    fout << buffer << "\n";
+    buffer = "";
+}
+  
+void ClearStack(int i) {
+    while (!stk[i].empty())
+        stk[i].pop();
+}
+  
+void Solve(void) {
+    for (int i = 1; i < 4; ++i)
+        ClearStack(i);
+    Read();
+    MoveStuff();
+    Print();
+}
